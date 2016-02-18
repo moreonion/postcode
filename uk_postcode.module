@@ -1,9 +1,5 @@
 <?php
 
-if (module_exists('webform')) {
-  require_once dirname(__FILE__) . '/webform.php';
-}
-
 /**
  * Implements hook_element_info().
  */
@@ -116,4 +112,26 @@ function uk_postcode_webform_component_info() {
     ],
   ];
   return $component_info;
+}
+
+/**
+ * Implements hook_form_builder_element_types().
+ */
+function uk_postcode_form_builder_element_types() {
+  module_load_include('components.inc', 'form_builder_webform');
+  $types['uk_postcode'] = [
+    'title' => t('UK Postcode'),
+    // Properties that may be edited on this field type.
+    'properties' => [
+      'title',
+      'description',
+      'field_prefix',
+      'field_suffix',
+      'default_value',
+      'required',
+      'size',
+    ],
+    'default' => _form_builder_webform_default('uk_postcode'),
+  ];
+  return $types;
 }
