@@ -153,3 +153,13 @@ function _webform_csv_headers_uk_postcode($component, $export_options) {
 function _webform_csv_data_uk_postcode($component, $export_options, $value) {
   return empty($value[0]) ? '' : $value[0];
 }
+
+
+/**
+ * Implements _webform_form_builder_map_<webform-component>().
+ */
+function _webform_form_builder_map_uk_postcode() {
+  return [
+    'form_builder_type' => 'uk_postcode',
+  ];
+}

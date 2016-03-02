@@ -117,7 +117,10 @@ function uk_postcode_webform_component_info() {
 /**
  * Implements hook_form_builder_element_types().
  */
-function uk_postcode_form_builder_element_types() {
+function uk_postcode_form_builder_element_types($form_type, $form_id) {
+  if ($form_type != 'webform') {
+    return;
+  }
   module_load_include('components.inc', 'form_builder_webform');
   $types['uk_postcode'] = [
     'title' => t('UK Postcode'),
@@ -130,6 +133,7 @@ function uk_postcode_form_builder_element_types() {
       'default_value',
       'required',
       'size',
+      'key',
     ],
     'default' => _form_builder_webform_default('uk_postcode'),
   ];
