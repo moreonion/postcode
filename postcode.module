@@ -2,6 +2,14 @@
 
 /**
  * Implements hook_element_info().
+ *
+ * In addition to the usual #properties for textfields, postcodes have
+ * some attributes to configure the validation.
+ * - #postcode_country: An ISO-country code. If this is set to a non-empty
+ *     value, this will be taken as country.
+ * - #postcode_country_parents: An array of #parents that is used to find
+ *     another form-field that holds the country value. This takes only effect
+ *     if #postcode_country is empty.
  */
 function postcode_element_info() {
   $elements['postcode'] = [
@@ -13,6 +21,9 @@ function postcode_element_info() {
     // Needed as defaults for rendering as textfield.
     '#size' => 60,
     '#autocomplete_path' => FALSE,
+    // Configure the validation.
+    '#postcode_country' => NULL,
+    '#postcode_country_parents' => [],
   ];
   return $elements;
 }
@@ -30,74 +41,30 @@ function postcode_element_process($element, &$form_state) {
  */
 function postcode_element_validate($element, &$form_state) {
   $value = &drupal_array_get_nested_value($form_state['values'], $element['#parents']);
-  $value = drupal_strtoupper(trim($value));
 
   // Empty values are valid if this element is not required.
   if (empty($value) && empty($element['#required'])) {
     return;
   }
 
-  $v = _postcode_validate($value);
+  if (isset($element['#postcode_country'])) {
+    $country = $element['#postcode_country'];
+  }
+  elseif ($parents = $element['#postcode_country_parents']) {
+    $country = drupal_array_get_nested_value($form_state['values'], $parents);
+  }
+  else {
+    $country = FALSE;
+  }
+
+  $v = postal_code_validation_validate($value, $country);
   if (!empty($v['error'])) {
-    form_error($element, t('Please enter a valid UK postcode.'));
+    form_error($element, t('Please enter a valid postcode.'));
   }
   else {
     // Set the normalized postcode as value.
     $value = $v['postal_code'];
   }
-}
-
-/**
- * Validate a postcode.
- *
- * Kindly taken from the postal_code_validation drupal module. Just using this
- * function doesn't justify having the module as dependency.
- */
-function _postcode_validate($postal_code) {
-  $return['country'] = 'GB';
-
-  // Postal codes for dependencies. They actually have a space after the 4th character.
-  $special_codes = array(
-    // Ascension Island should be AC, but that is not an ISO country code.
-    'ASCN1ZZ' => 'SH',
-    'BBND1ZZ' => 'IO',
-    'FIQQ1ZZ' => 'FK',
-    'GX111AA' => 'GI',
-    'PCRN1ZZ' => 'PN',
-    'SIQQ1ZZ' => 'GS',
-    'STHL1ZZ' => 'SH',
-    'TDCU1ZZ' => 'SH',
-    'TKCA1ZZ' => 'TC',
-  );
-
-  if (isset($special_codes[$postal_code]) || preg_match('/^((BFPO ?[0-9]{1,4})|(GIR ?0AA)|(((A[BL]|B[ABDHLNRSTX]?|C[ABFHMORTVW]|D[ADEGHLNTY]|E[HNX]?|F[KY]|G[LUY]?|H[ADGPRSUX]|I[GMPV]|JE|K[ATWY]|L[ADELNSU]?|M[EKL]?|N[EGNPRW]?|O[LX]|P[AEHLOR]|R[GHM]|S[AEGKLMNOPRSTY]?|T[ADFNQRSW]|UB|W[ADFNRSV]|YO|ZE)[1-9]?[0-9]|((E|N|NW|SE|SW|W)1|EC[1-4]|WC[12])[A-HJKMNPR-Y]|(SW|W)([2-9]|[1-9][0-9])|EC[1-9][0-9]) ?[0-9][ABD-HJLNP-UW-Z]{2}))$/', $postal_code)) {
-    // BFPO postal codes.
-    if (drupal_substr($postal_code, 0, 4) === 'BFPO') {
-      $return['postal_code'] = 'BFPO ' . drupal_substr($postal_code, 4);
-    }
-    // BS 7666 and special postal codes.
-    else {
-      // Format postal code.
-      $return['postal_code'] = drupal_substr($postal_code, 0, -3) . ' ' . drupal_substr($postal_code, -3);
-
-      if (isset($special_codes[$postal_code])) {
-        $return['country'] = $special_codes[$postal_code];
-      }
-      elseif (drupal_substr($postal_code, 0, 2) === 'GY') {
-        $return['country'] = 'GG';
-      }
-      elseif (drupal_substr($postal_code, 0, 2) === 'IM') {
-        $return['country'] = 'IM';
-      }
-      elseif (drupal_substr($postal_code, 0, 2) === 'JE') {
-        $return['country'] = 'JE';
-      }
-    }
-  }
-  else {
-    $return['error'] = t('Invalid postcode. Postcodes in the United Kingdom and its dependencies are like one of these: "A9 9AA", "A99 9AA", "AA9 9AA", "AA99 9AA", "A9A 9AA", "AA9A 9AA", or, for some dependencies, "AAAA 1ZZ".');
-  }
-  return $return;
 }
 
 /**
