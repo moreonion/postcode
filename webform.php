@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Webform module uk_postcode component.
+ * Webform module postcode component.
  */
 
 /**
  * Implements _webform_defaults_[component]().
  */
-function _webform_defaults_uk_postcode() {
+function _webform_defaults_postcode() {
   return array(
     'name' => 'Postcode',
     'form_key' => 'postcode',
@@ -31,9 +31,9 @@ function _webform_defaults_uk_postcode() {
 /**
  * Implements _webform_edit_[component]().
  */
-function _webform_edit_uk_postcode($component) {
+function _webform_edit_postcode($component) {
   $form['value'] = array(
-    '#type' => 'uk_postcode',
+    '#type' => 'postcode',
     '#title' => t('Default value'),
     '#default_value' => $component['value'],
     '#description' => t('The default value of the field.') . theme('webform_token_help'),
@@ -74,11 +74,11 @@ function _webform_edit_uk_postcode($component) {
 /**
  * Implements _webform_render_[component]().
  */
-function _webform_render_uk_postcode($component, $value = NULL, $filter = TRUE) {
+function _webform_render_postcode($component, $value = NULL, $filter = TRUE) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(
-    '#type' => 'uk_postcode',
+    '#type' => 'postcode',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#default_value' => $filter ? _webform_filter_values($component['value'], $node) : $component['value'],
@@ -90,8 +90,8 @@ function _webform_render_uk_postcode($component, $value = NULL, $filter = TRUE) 
     '#translatable' => array('title', 'description'),
   );
 
-  // Add an uk-postcode class for identifying the difference from normal textfields.
-  $element['#attributes']['class'][] = 'uk-postcode';
+  // Add an postcode class for identifying the difference from normal textfields.
+  $element['#attributes']['class'][] = 'postcode';
 
   // Enforce uniqueness.
   if ($component['extra']['unique']) {
@@ -122,7 +122,7 @@ function _webform_render_uk_postcode($component, $value = NULL, $filter = TRUE) 
 /**
  * Implements _webform_display_[component]().
  */
-function _webform_display_uk_postcode($component, $value, $format = 'html') {
+function _webform_display_postcode($component, $value, $format = 'html') {
   return [
     '#markup' => isset($value[0]) ? $value[0] : '',
   ];
@@ -131,7 +131,7 @@ function _webform_display_uk_postcode($component, $value, $format = 'html') {
 /**
  * Implements _webform_table_component().
  */
-function _webform_table_uk_postcode($component, $value) {
+function _webform_table_postcode($component, $value) {
   return check_plain(empty($value[0]) ? '' : $value[0]);
 }
 
@@ -139,7 +139,7 @@ function _webform_table_uk_postcode($component, $value) {
 /**
  * Implements _webform_csv_headers_component().
  */
-function _webform_csv_headers_uk_postcode($component, $export_options) {
+function _webform_csv_headers_postcode($component, $export_options) {
   $header = array();
   $header[0] = '';
   $header[1] = '';
@@ -150,7 +150,7 @@ function _webform_csv_headers_uk_postcode($component, $export_options) {
 /**
  * Implements _webform_csv_data_component().
  */
-function _webform_csv_data_uk_postcode($component, $export_options, $value) {
+function _webform_csv_data_postcode($component, $export_options, $value) {
   return empty($value[0]) ? '' : $value[0];
 }
 
@@ -158,8 +158,8 @@ function _webform_csv_data_uk_postcode($component, $export_options, $value) {
 /**
  * Implements _webform_form_builder_map_<webform-component>().
  */
-function _webform_form_builder_map_uk_postcode() {
+function _webform_form_builder_map_postcode() {
   return [
-    'form_builder_type' => 'uk_postcode',
+    'form_builder_type' => 'postcode',
   ];
 }

@@ -3,13 +3,13 @@
 /**
  * Implements hook_element_info().
  */
-function uk_postcode_element_info() {
-  $elements['uk_postcode'] = [
+function postcode_element_info() {
+  $elements['postcode'] = [
     '#theme' => 'textfield',
     '#theme_wrappers' => ['form_element'],
     '#input' => TRUE,
-    '#process' => ['uk_postcode_element_process'],
-    '#element_validate' => ['uk_postcode_element_validate'],
+    '#process' => ['postcode_element_process'],
+    '#element_validate' => ['postcode_element_validate'],
     // Needed as defaults for rendering as textfield.
     '#size' => 60,
     '#autocomplete_path' => FALSE,
@@ -18,17 +18,17 @@ function uk_postcode_element_info() {
 }
 
 /**
- * Form element process callback for the uk_postcode element-type.
+ * Form element process callback for the postcode element-type.
  */
-function uk_postcode_element_process($element, &$form_state) {
-  $element['#attributes']['class'][] = 'form-uk-postcode';
+function postcode_element_process($element, &$form_state) {
+  $element['#attributes']['class'][] = 'form-postcode';
   return $element;
 }
 
 /**
  * Form element validate callback.
  */
-function uk_postcode_element_validate($element, &$form_state) {
+function postcode_element_validate($element, &$form_state) {
   $value = &drupal_array_get_nested_value($form_state['values'], $element['#parents']);
   $value = drupal_strtoupper(trim($value));
 
@@ -37,7 +37,7 @@ function uk_postcode_element_validate($element, &$form_state) {
     return;
   }
 
-  $v = _uk_postcode_validate($value);
+  $v = _postcode_validate($value);
   if (!empty($v['error'])) {
     form_error($element, t('Please enter a valid UK postcode.'));
   }
@@ -53,7 +53,7 @@ function uk_postcode_element_validate($element, &$form_state) {
  * Kindly taken from the postal_code_validation drupal module. Just using this
  * function doesn't justify having the module as dependency.
  */
-function _uk_postcode_validate($postal_code) {
+function _postcode_validate($postal_code) {
   $return['country'] = 'GB';
 
   // Postal codes for dependencies. They actually have a space after the 4th character.
@@ -103,10 +103,10 @@ function _uk_postcode_validate($postal_code) {
 /**
  * Implements hook_webform_component_info().
  */
-function uk_postcode_webform_component_info() {
-  $component_info['uk_postcode'] = [
-    'label' => t('UK postcode'),
-    'description' => t('A special textfield that accepts UK postcodes.'),
+function postcode_webform_component_info() {
+  $component_info['postcode'] = [
+    'label' => t('Postcode'),
+    'description' => t('A textfield that only accepts postcodes.'),
     'file' => 'webform.php',
     'features' => [
     ],
@@ -117,13 +117,13 @@ function uk_postcode_webform_component_info() {
 /**
  * Implements hook_form_builder_element_types().
  */
-function uk_postcode_form_builder_element_types($form_type, $form_id) {
+function postcode_form_builder_element_types($form_type, $form_id) {
   if ($form_type != 'webform') {
     return;
   }
   module_load_include('components.inc', 'form_builder_webform');
-  $types['uk_postcode'] = [
-    'title' => t('UK Postcode'),
+  $types['postcode'] = [
+    'title' => t('Postcode'),
     // Properties that may be edited on this field type.
     'properties' => [
       'title',
@@ -135,7 +135,7 @@ function uk_postcode_form_builder_element_types($form_type, $form_id) {
       'size',
       'key',
     ],
-    'default' => _form_builder_webform_default('uk_postcode'),
+    'default' => _form_builder_webform_default('postcode'),
   ];
   return $types;
 }

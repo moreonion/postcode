@@ -1,0 +1,3 @@
+name = Postcode form field
+description = Form element to enter postcodes.
+core = 7.x
