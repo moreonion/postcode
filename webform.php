@@ -24,6 +24,9 @@ function _webform_defaults_postcode() {
       'description' => '',
       'attributes' => array(),
       'private' => FALSE,
+      'postcode_country_mode' => 'component',
+      'postcode_country' => '',
+      'postcode_country_component' => NULL,
     ),
   );
 }
@@ -32,6 +35,8 @@ function _webform_defaults_postcode() {
  * Implements _webform_edit_[component]().
  */
 function _webform_edit_postcode($component) {
+  require_once DRUPAL_ROOT . '/includes/locale.inc';
+
   $form['value'] = array(
     '#type' => 'postcode',
     '#title' => t('Default value'),
@@ -68,9 +73,87 @@ function _webform_edit_postcode($component) {
     '#default_value' => $component['extra']['unique'],
     '#parents' => array('extra', 'unique'),
   );
+  $country_class = drupal_html_id('postcode-country-mode');
+  $form['validation']['postcode_country_mode'] = [
+    '#type' => 'radios',
+    '#title' => t('Country for validation'),
+    '#description' => t('Choose how the country that is used to validate the postcode is selected.'),
+    '#options' => [
+      'component' => t('From another form component'),
+      'fixed' => t('Fixed country'),
+    ],
+    '#weight' => 2,
+    '#attributes' => ['class' => [$country_class]],
+    '#default_value' => $component['extra']['postcode_country_mode'],
+    '#parents' => array('extra', 'postcode_country_mode'),
+  ];
+  $form['validation']['postcode_country'] = [
+    '#type' => 'select',
+    '#options' => country_get_list(),
+    '#states' => ['visible' => [".$country_class input" => ['value' => 'fixed']]],
+    '#weight' => 3,
+    '#default_value' => $component['extra']['postcode_country'],
+    '#parents' => array('extra', 'postcode_country'),
+  ];
+  $my_page = isset($component['page_num']) ? $component['page_num'] : NULL;
+  $my_cid = isset($component['cid']) ? [$component['cid']] : [];
+  $form['validation']['postcode_country_component'] = [
+    '#states' => ['visible' => [".$country_class input" => ['value' => 'component']]],
+    '#weight' => 4,
+    '#default_value' => $component['extra']['postcode_country_component'],
+    '#parents' => array('extra', 'postcode_country_component'),
+  ] + _postcode_component_selector(node_load($component['nid']), $my_page, $my_cid);
   return $form;
 }
 
+function _postcode_component_selector($node, $max_page = NULL, $disable_cids = [], $disable_types = ['pagebreak'], $disable_features = ['group']) {
+  // Normalize list so all components are inside a page-array.
+  $page_list = ['<first-page>' => []];
+  foreach (webform_component_list($node, FALSE, TRUE, TRUE) as $title_or_cid => $maybe_page) {
+    if (is_array($maybe_page)) {
+      $page_list[$title_or_cid] = $maybe_page;
+    }
+    else {
+      $page_list['<first-page>'][$title_or_cid] = $maybe_page;
+    }
+  }
+  $disabled = [];
+  $options = [];
+  $num = 1;
+  foreach ($page_list as $title => $component_list) {
+    $page_options = [];
+    foreach ($component_list as $cid => $name) {
+      $component = $node->webform['components'][$cid];
+      $page_options[$cid] = $name;
+      if (in_array($cid, $disable_cids) || in_array($component['type'], $disable_types)) {
+        $disabled[] = $cid;
+      }
+      else {
+        foreach ($disable_features as $f) {
+          if (webform_component_feature($component['type'], $f)) {
+            $disabled[] = $cid;
+            break;
+          }
+        }
+      }
+    }
+    $options[$title] = $page_options;
+    if ($num++ >= $max_page) {
+      break;
+    }
+  }
+  $component_list_disabled = empty($options);
+  if (!$options) {
+    $options = ['' => t('No available components')];
+  }
+  return [
+    '#type' => 'select',
+    '#title' => t('Choose component'),
+    '#options' => $options,
+    '#disabled_options' => $disabled,
+    '#disabled' => $component_list_disabled,
+  ];
+}
 /**
  * Implements _webform_render_[component]().
  */
@@ -89,6 +172,20 @@ function _webform_render_postcode($component, $value = NULL, $filter = TRUE) {
     '#theme_wrappers' => array('webform_element'),
     '#translatable' => array('title', 'description'),
   );
+  if ($component['extra']['postcode_country_mode'] == 'component') {
+    $cid = $component['extra']['postcode_country_component'];
+    $element['#postcode_country_cid'] = $cid;
+    $parents = [];
+    while ($cid > 0) {
+      $c = $node->webform['components'][$cid];
+      $parents[] = $c['form_key'];
+      $cid = $c['pid'];
+    }
+    $element['#postcode_country_parents'] = array_merge(['submitted'], array_reverse($parents));
+  }
+  else {
+    $element['#postcode_country'] = $component['extra']['postcode_country'];
+  }
 
   // Add an postcode class for identifying the difference from normal textfields.
   $element['#attributes']['class'][] = 'postcode';
