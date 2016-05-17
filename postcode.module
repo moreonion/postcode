@@ -106,8 +106,22 @@ function postcode_form_builder_element_types($form_type, $form_id) {
       'required',
       'size',
       'key',
+      'postcode_country',
+      'postcode_country_mode',
+      'postcode_country_component',
     ],
     'default' => _form_builder_webform_default('postcode'),
   ];
   return $types;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ * Implements hook_form_form_builder_webform_save_form_alter().
+ *
+ * Form-builder currently doesn't use the Drupal-AJAX framework. Thus adding
+ * JS on the fly doesn't work. Remove this once form_builder has improved.
+ */
+function postcode_form_form_builder_webform_save_form_alter(&$form, &$form_state) {
+  $form['#attached']['js'][] = 'misc/states.js';
 }

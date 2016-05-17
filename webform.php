@@ -258,5 +258,54 @@ function _webform_csv_data_postcode($component, $export_options, $value) {
 function _webform_form_builder_map_postcode() {
   return [
     'form_builder_type' => 'postcode',
+    'properties' => [
+      'postcode_country' => [
+        'storage_parents' => ['extra', 'postcode_country']
+      ],
+      'postcode_country_mode' => [
+        'storage_parents' => ['extra', 'postcode_country_mode']
+      ],
+      'postcode_country_component' => [
+        'storage_parents' => ['extra', 'postcode_country_component']
+      ],
+    ],
   ];
 }
+
+/**
+ * Implements _webform_form_builder_properties_<webform-component>().
+ *
+ * Component specific properties.
+ * This is currently broken as the component specific properties are merged into
+ * the global property list. That makes it behave the same way as an implementation
+ * of hook_form_builder_properties().
+ *
+ * @see form_builder_webform_form_builder_properties().
+ */
+function _webform_form_builder_properties_postcode() {
+  return [
+    'postcode_country' => [
+      'form' => '_postcode_country_form_builder_form',
+      'submit' => ['_postcode_country_form_builder_form_submit'],
+    ],
+    'postcode_country_mode' => [],
+    'postcode_country_component' => [],
+  ];
+}
+
+/**
+ * Form callback for the newsletter property.
+ *
+ * @see _webform_form_builder_map_postcode().
+ */
+function _postcode_country_form_builder_form(&$form_state, $form_type, $element, $property) {
+  $edit = _webform_edit_postcode($element['#webform_component']);
+  foreach (['country_mode', 'country', 'country_component'] as  $f) {
+    $f = "postcode_$f";
+    $form[$f] = $edit['validation'][$f];
+    $form[$f]['#form_builder']['property_group'] = 'validation';
+  }
+
+  return $form;
+}
+
