@@ -1,5 +1,7 @@
 <?php
 
+use \Drupal\little_helpers\Webform\Webform;
+
 /**
  * Implements hook_element_info().
  *
@@ -124,4 +126,30 @@ function postcode_form_builder_element_types($form_type, $form_id) {
  */
 function postcode_form_form_builder_webform_save_form_alter(&$form, &$form_state) {
   $form['#attached']['js'][] = 'misc/states.js';
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Map form_builder-element_ids to actual webform component IDs.
+ */
+function postcode_node_presave($node) {
+  if (!module_exists('form_builder_webform') || !isset($node->webform) || !isset($node->nid)) {
+    return;
+  }
+
+  $map = [];
+  foreach ($node->webform['components'] as $cid => $component) {
+    if (isset($component['form_builder_element_id'])) {
+      $map[$component['form_builder_element_id']] = $cid;
+    }
+  }
+
+  $webform = new Webform($node);
+  foreach ($webform->componentsByType('postcode') as $cid => $component) {
+    $t = $component['extra']['postcode_country_component'];
+    if (isset($t) && !is_numeric($t) && isset($map[$t])) {
+      $node->webform['components'][$cid]['extra']['postcode_country_component'] = $map[$t];
+    }
+  }
 }

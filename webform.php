@@ -106,40 +106,11 @@ function _webform_edit_postcode($component) {
   return $form;
 }
 
-function _postcode_component_selector($node, $max_page = NULL, $disable_cids = [], $disable_types = ['pagebreak'], $disable_features = ['group']) {
-  // Normalize list so all components are inside a page-array.
-  $page_list = ['<first-page>' => []];
-  foreach (webform_component_list($node, FALSE, TRUE, TRUE) as $title_or_cid => $maybe_page) {
-    if (is_array($maybe_page)) {
-      $page_list[$title_or_cid] = $maybe_page;
-    }
-    else {
-      $page_list['<first-page>'][$title_or_cid] = $maybe_page;
-    }
-  }
-  $disabled = [];
+function _postcode_component_selector($node, $max_page = NULL, $disable_cids = [], $exclude_types = ['pagebreak', 'fieldset']) {
   $options = [];
-  $num = 1;
-  foreach ($page_list as $title => $component_list) {
-    $page_options = [];
-    foreach ($component_list as $cid => $name) {
-      $component = $node->webform['components'][$cid];
-      $page_options[$cid] = $name;
-      if (in_array($cid, $disable_cids) || in_array($component['type'], $disable_types)) {
-        $disabled[] = $cid;
-      }
-      else {
-        foreach ($disable_features as $f) {
-          if (webform_component_feature($component['type'], $f)) {
-            $disabled[] = $cid;
-            break;
-          }
-        }
-      }
-    }
-    $options[$title] = $page_options;
-    if ($num++ >= $max_page) {
-      break;
+  foreach ($node->webform['components'] as $cid => $component) {
+    if (!in_array($component['type'], $exclude_types) && !in_array($cid, $disable_cids)) {
+      $options[$cid] = $component['name'];
     }
   }
   $component_list_disabled = empty($options);
@@ -150,10 +121,33 @@ function _postcode_component_selector($node, $max_page = NULL, $disable_cids = [
     '#type' => 'select',
     '#title' => t('Choose component'),
     '#options' => $options,
-    '#disabled_options' => $disabled,
     '#disabled' => $component_list_disabled,
+    '#process' => array_merge(['postcode_update_component_options'], element_info('select')['#process']),
   ];
 }
+
+/**
+ * Element process callback for the component selector.
+ */
+function postcode_update_component_options($element, &$form_state, $form) {
+  if ($form['#form_id'] == 'form_builder_field_configure') {
+    $args = $form_state['build_info']['args'];
+    $cache = FormBuilderLoader::instance()->fromCache($args[0], $args[1]);
+    $node = node_load($args[1]);
+    $options = [];
+    $my_id = $form['#_edit_element_id'];
+    foreach ($cache->getComponents(node_load($args[1])) as $component) {
+      $element_id = $component['form_builder_element_id'];
+      if (!in_array($component['type'], ['fieldset', 'pagebreak']) && $element_id != $my_id) {
+        $options[$element_id] = $component['name'];
+      }
+    }
+    $element['#options'] = $options;
+  }
+  return $element;
+
+}
+
 /**
  * Implements _webform_render_[component]().
  */
@@ -304,6 +298,7 @@ function _postcode_country_form_builder_form(&$form_state, $form_type, $element,
     $f = "postcode_$f";
     $form[$f] = $edit['validation'][$f];
     $form[$f]['#form_builder']['property_group'] = 'validation';
+    $form[$f]['#parents'] = [$f];
   }
 
   return $form;

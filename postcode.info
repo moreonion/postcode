@@ -3,4 +3,5 @@ description = Form element to enter postcodes.
 core = 7.x
 php = 5.4
 
+dependencies[] = little_helpers
 dependencies[] = postal_code_validation
