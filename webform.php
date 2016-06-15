@@ -24,7 +24,7 @@ function _webform_defaults_postcode() {
       'description' => '',
       'attributes' => array(),
       'private' => FALSE,
-      'postcode_country_mode' => 'component',
+      'postcode_country_mode' => 'fixed',
       'postcode_country' => '',
       'postcode_country_component' => NULL,
     ),
@@ -94,6 +94,7 @@ function _webform_edit_postcode($component) {
     '#weight' => 3,
     '#default_value' => $component['extra']['postcode_country'],
     '#parents' => array('extra', 'postcode_country'),
+    '#empty_value' => '',
   ];
   $my_page = isset($component['page_num']) ? $component['page_num'] : NULL;
   $my_cid = isset($component['cid']) ? [$component['cid']] : [];
