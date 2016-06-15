@@ -1,0 +1,6 @@
+name = Postcode test module
+description = This is only for testing purposes
+core = 7.x
+hidden = TRUE
+
+dependencies[] = postcode

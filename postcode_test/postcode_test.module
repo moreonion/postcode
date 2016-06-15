@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function postcode_test_menu() {
+  $items['postcode-test'] = [
+    'type' => MENU_CALLBACK,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['postcode_test_form'],
+    'access callback' => TRUE,
+  ];
+  return $items;
+}
+
+/**
+ * Form: Test form.
+ */
+function postcode_test_form($form, &$form_state) {
+  require_once DRUPAL_ROOT . '/includes/locale.inc';
+  $form['#tree'] = TRUE;
+
+  $form['postcode1'] = [
+    '#type' => 'postcode',
+    '#title' => t('UK Postcode'),
+    '#postcode_country' => 'GB',
+  ];
+
+  $form['select'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Country select and postcode'),
+  ];
+  $form['select']['country'] = [
+    '#type' => 'select',
+    '#title' => t('Country'),
+    '#options' => country_get_list(),
+  ];
+  $form['select']['postcode'] = [
+    '#type' => 'postcode',
+    '#title' => t('Postcode'),
+    '#postcode_country_parents' => ['select', 'country'],
+  ];
+
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  ];
+  return $form;
+}
