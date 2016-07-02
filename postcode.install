@@ -15,6 +15,7 @@ function postcode_install() {
     $node = node_load($row->nid);
     $component = &$node->webform['components'][$row->cid];
     $component['type'] = 'postcode';
+    $component += ['extra' => []];
     $component['extra'] += [
       'postcode_country_mode' => 'fixed',
       'postcode_country' => 'GB',
