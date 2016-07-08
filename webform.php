@@ -98,10 +98,15 @@ function _webform_edit_postcode($component) {
   ];
   $my_page = isset($component['page_num']) ? $component['page_num'] : NULL;
   $my_cid = isset($component['cid']) ? [$component['cid']] : [];
+  $country_id = $component['extra']['postcode_country_component'];
+  // Add cid_ prefix for webform component ids.
+  if (is_numeric($country_id)) {
+    $country_id = 'cid_' . $country_id;
+  }
   $form['validation']['postcode_country_component'] = [
     '#states' => ['visible' => [".$country_class input" => ['value' => 'component']]],
     '#weight' => 4,
-    '#default_value' => $component['extra']['postcode_country_component'],
+    '#default_value' => $country_id,
     '#parents' => array('extra', 'postcode_country_component'),
   ] + _postcode_component_selector(node_load($component['nid']), $my_page, $my_cid);
   return $form;
