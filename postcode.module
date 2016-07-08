@@ -53,7 +53,11 @@ function postcode_element_validate($element, &$form_state) {
   if (isset($element['#postcode_country'])) {
     $country = $element['#postcode_country'];
   }
-  // Check for webform3 storage. In webform4 use #postcode_country_parents.
+  // webform3 if element is on same page.
+  elseif (($parents = $element['#postcode_country_parents']) && drupal_array_get_nested_value($form_state['complete form'], $parents)) {
+    $country = drupal_array_get_nested_value($form_state['values'], $parents);
+  }
+  // webform3 storage for previous step values.
   elseif (($cid = $element['#postcode_country_cid']) && isset($form_state['storage']['submitted'])) {
     $country = $form_state['storage']['submitted'][$cid];
   }
