@@ -5,6 +5,8 @@
  * Webform module postcode component.
  */
 
+use Drupal\form_builder\Loader;
+
 /**
  * Implements _webform_defaults_[component]().
  */
@@ -139,7 +141,7 @@ function _postcode_component_selector($node, $max_page = NULL, $disable_cids = [
 function postcode_update_component_options($element, &$form_state, $form) {
   if ($form['#form_id'] == 'form_builder_field_configure') {
     $args = $form_state['build_info']['args'];
-    $cache = FormBuilderLoader::instance()->fromCache($args[0], $args[1]);
+    $cache = Loader::instance()->fromCache($args[0], $args[1]);
     $node = node_load($args[1]);
     $options = [];
     $my_id = $form['#_edit_element_id'];
