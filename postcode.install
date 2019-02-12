@@ -8,19 +8,21 @@
  * Disable uk_postcode and migrate all webform components.
  */
 function postcode_install() {
-  module_disable(['uk_postcode'], FALSE);
-  // Migrate old webform-components.
-  $result = db_query("SELECT nid, cid FROM {webform_component} WHERE type='uk_postcode'");
-  foreach ($result as $row) {
-    $node = node_load($row->nid);
-    $component = &$node->webform['components'][$row->cid];
-    $component['type'] = 'postcode';
-    $component += ['extra' => []];
-    $component['extra'] += [
-      'postcode_country_mode' => 'fixed',
-      'postcode_country' => 'GB',
-      'postcode_country_component' => NULL,
-    ];
-    node_save($node);
+  if (module_exists('uk_postcode') && module_exists('webform')) {
+    module_disable(['uk_postcode'], FALSE);
+    // Migrate old webform-components.
+    $result = db_query("SELECT nid, cid FROM {webform_component} WHERE type='uk_postcode'");
+    foreach ($result as $row) {
+      $node = node_load($row->nid);
+      $component = &$node->webform['components'][$row->cid];
+      $component['type'] = 'postcode';
+      $component += ['extra' => []];
+      $component['extra'] += [
+        'postcode_country_mode' => 'fixed',
+        'postcode_country' => 'GB',
+        'postcode_country_component' => NULL,
+      ];
+      node_save($node);
+    }
   }
 }
