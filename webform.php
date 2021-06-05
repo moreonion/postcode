@@ -289,7 +289,6 @@ function _webform_form_builder_properties_postcode() {
   return [
     'postcode_country' => [
       'form' => '_postcode_country_form_builder_form',
-      'submit' => ['_postcode_country_form_builder_form_submit'],
     ],
     'postcode_country_mode' => [],
     'postcode_country_component' => [],
@@ -297,12 +296,11 @@ function _webform_form_builder_properties_postcode() {
 }
 
 /**
- * Form callback for the newsletter property.
+ * Form callback for the postcode property.
  *
  * @see _webform_form_builder_map_postcode().
  */
-function _postcode_country_form_builder_form(&$form_state, $form_type, $element, $property) {
-  $edit = _webform_edit_postcode($element['#webform_component']);
+function _postcode_country_form_builder_form(array $component, array $edit, array &$form_state) {
   foreach (['country_mode', 'country', 'country_component'] as  $f) {
     $f = "postcode_$f";
     $form[$f] = $edit['validation'][$f];
